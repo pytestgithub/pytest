@@ -4,12 +4,13 @@ define HELP
 This is the pytest testrail project Makefile.
 
 Usage:
+make requirements - Install dependencies
 make clean        - Remove generated files
 make coverage     - Run coverage analysis
 make lint         - Run static analysis
-make release      - Bumpversion and push with tags
-make requirements - Install dependencies
 make test         - Run static analysis, tests with coverage
+make build        - Build new package version with setuptools
+make push         - Push new version to pyPI
 
 endef
 
@@ -17,6 +18,12 @@ export HELP
 
 all help:
 	@echo "$$HELP"
+
+requirements: .requirements.txt
+
+.requirements.txt: requirements/*.txt
+	pip3 install -r requirements/base.txt
+	pip freeze > $@
 
 clean:
 	rm -rf .cache .coverage .tox pytests_py*-test.xml pytest_testrail.egg-info pytest_testrail.txt pytests_coverage.xml
@@ -31,15 +38,11 @@ lint:
 README.rst: README.md
 	pandoc --from=markdown --to=rst --output=README.rst README.md
 
-release:
-	bump2version $(type)
-	git push origin master --tags
-
-requirements: .requirements.txt
-
-.requirements.txt: requirements/*.txt
-	pip install -r requirements/base.txt
-	pip freeze > $@
-
 test: coverage lint
 	tox
+
+build:
+	python3 setup.py sdist bdist_wheel
+
+push:
+	twine upload dist/*

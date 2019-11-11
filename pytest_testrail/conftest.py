@@ -118,6 +118,11 @@ def pytest_addoption(parser):
         required=False,
         help='Custom comment, to be appended to default comment for test case (config file: custom_comment in TESTCASE section)'
     )
+    group.addoption(
+        '--tr-report-single-test',
+        action='store_true',
+        required=False,
+        help='Report result immediately for each test case when it finished')
 
 
 def pytest_configure(config):
@@ -148,10 +153,11 @@ def pytest_configure(config):
                 publish_blocked=config.getoption('--tr-dont-publish-blocked'),
                 skip_missing=config.getoption('--tr-skip-missing'),
                 milestone_id=config_manager.getoption('tr-milestone-id', 'milestone_id', 'TESTRUN'),
-                custom_comment=config_manager.getoption('tc-custom-comment', 'custom_comment', 'TESTCASE')
+                custom_comment=config_manager.getoption('tc-custom-comment', 'custom_comment', 'TESTCASE'),
+                report_single_test=config.getoption('--tr-report-single-test')
             ),
             # Name of plugin instance (allow to be used by other plugins)
-            name="pytest-testrail-instance"
+            name="pytest-testrail-e2e-instance"
         )
 
 

@@ -1,10 +1,8 @@
-pytest-testrail
+pytest-testrail-e2e
 ===============
 
-![](https://github.com/allankp/pytest-testrail/workflows/master/badge.svg)
-[![PyPI version](https://badge.fury.io/py/pytest-testrail.svg)](https://badge.fury.io/py/pytest-testrail)
-[![Downloads](https://pepy.tech/badge/pytest-testrail)](https://pepy.tech/project/pytest-testrail)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/83b960043527429a8310cced2d8defcb)](https://www.codacy.com/manual/allankp/pytest-testrail?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=allankp/pytest-testrail&amp;utm_campaign=Badge_Grade)
+[![PyPI version](https://badge.fury.io/py/pytest-testrail-e2e.svg)](https://badge.fury.io/py/pytest-testrail-e2e)
+[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](/LICENSE)
 
 This is a pytest plugin for creating/editing testplans or testruns based on pytest markers.
 The results of the collected tests will be updated against the testplan/testrun in TestRail.
@@ -12,7 +10,7 @@ The results of the collected tests will be updated against the testplan/testrun 
 Installation
 ------------
 
-    pip install pytest-testrail
+    pip install pytest-testrail-e2e
 
 Configuration
 -------------
@@ -107,3 +105,26 @@ Once the all tests are finished they will be updated in TestRail:
 | --tr-skip-missing              | Skip test cases that are not present in testrun                                                                     |
 | --tr-milestone-id              | Identifier of milestone to be assigned to run                                                                       |
 | --tc-custom-comment            | Custom comment, to be appended to default comment for test case (config file: custom_comment in TESTCASE section)   |
+| --tr-report-single-test        | Report result immediately for each test case when it finished  |
+
+## TestRail Settings
+
+To increase security, the TestRail team suggests using an API key instead of a password. You can see how to generate an API key [here](http://docs.gurock.com/testrail-api2/accessing#username_and_api_key).
+
+If you maintain your own TestRail instance on your own server, it is recommended to [enable HTTPS for your TestRail installation](http://docs.gurock.com/testrail-admin/admin-securing#using_https).
+
+For TestRail hosted accounts maintained by [Gurock](http://www.gurock.com/), all accounts will automatically use HTTPS.
+
+You can read the whole TestRail documentation [here](http://docs.gurock.com/).
+
+## Author
+
+NGUYEN Viet - [github](https://github.com/vietnq254)
+
+## License
+
+This project is licensed under the [MIT license](/LICENSE).
+
+## Acknowledgments
+
+* [allankp](https://github.com/allankp), author of the [pytest-testrail](https://github.com/allankp/pytest-testrail) repository that was cloned.

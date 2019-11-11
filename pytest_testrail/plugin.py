@@ -141,7 +141,7 @@ def get_testrail_keys(items):
 class PyTestRailPlugin(object):
     def __init__(self, client, assign_user_id, project_id, suite_id, include_all, cert_check, tr_name, tr_description='', run_id=0,
                  plan_id=0, version='', close_on_complete=False, publish_blocked=True, skip_missing=False,
-                 milestone_id=None, custom_comment=None):
+                 milestone_id=None, custom_comment=None, report_single_test=False):
         self.assign_user_id = assign_user_id
         self.cert_check = cert_check
         self.client = client
@@ -159,12 +159,13 @@ class PyTestRailPlugin(object):
         self.skip_missing = skip_missing
         self.milestone_id = milestone_id
         self.custom_comment = custom_comment
+        self.report_single_test = report_single_test
 
     # pytest hooks
 
     def pytest_report_header(self, config, startdir):
         """ Add extra-info in header """
-        message = 'pytest-testrail: '
+        message = 'pytest-testrail-e2e: '
         if self.testplan_id:
             message += 'existing testplan #{} selected'.format(self.testplan_id)
         elif self.testrun_id:
@@ -232,27 +233,37 @@ class PyTestRailPlugin(object):
                         duration=rep.duration
                     )
 
-    def pytest_sessionfinish(self, session, exitstatus):
-        """ Publish results in TestRail """
-        print('[{}] Start publishing'.format(TESTRAIL_PREFIX))
-        if self.results:
-            tests_list = [str(result['case_id']) for result in self.results]
-            print('[{}] Testcases to publish: {}'.format(TESTRAIL_PREFIX, ', '.join(tests_list)))
+            if self.report_single_test and rep.when == 'teardown':
+                # Report result to TestRail immediately
+                self.__publish_results()
 
-            if self.testrun_id:
-                self.add_results(self.testrun_id)
-            elif self.testplan_id:
-                testruns = self.get_available_testruns(self.testplan_id)
-                print('[{}] Testruns to update: {}'.format(TESTRAIL_PREFIX, ', '.join([str(elt) for elt in testruns])))
-                for testrun_id in testruns:
-                    self.add_results(testrun_id)
-            else:
-                print('[{}] No data published'.format(TESTRAIL_PREFIX))
+    def pytest_sessionfinish(self, session, exitstatus):
+        if self.results:
+            if not self.report_single_test:
+               self.__publish_results()
 
             if self.close_on_complete and self.testrun_id:
                 self.close_test_run(self.testrun_id)
             elif self.close_on_complete and self.testplan_id:
                 self.close_test_plan(self.testplan_id)
+
+    def __publish_results(self):
+        """ Publish results in TestRail """
+        print('[{}] Start publishing'.format(TESTRAIL_PREFIX))
+
+        tests_list = [str(result['case_id']) for result in self.results]
+        print('[{}] Testcases to publish: {}'.format(TESTRAIL_PREFIX, ', '.join(tests_list)))
+
+        if self.testrun_id:
+            self.add_results(self.testrun_id)
+        elif self.testplan_id:
+            testruns = self.get_available_testruns(self.testplan_id)
+            print('[{}] Testruns to update: {}'.format(TESTRAIL_PREFIX, ', '.join([str(elt) for elt in testruns])))
+            for testrun_id in testruns:
+                self.add_results(testrun_id)
+        else:
+            print('[{}] No data published'.format(TESTRAIL_PREFIX))
+
         print('[{}] End publishing'.format(TESTRAIL_PREFIX))
 
     # plugin
@@ -267,6 +278,9 @@ class PyTestRailPlugin(object):
         :param comment: None or a failure representation.
         :param duration: Time it took to run just the test.
         """
+        if self.report_single_test:
+            self.results = []
+
         for test_id in test_ids:
             data = {
                     'case_id': test_id,

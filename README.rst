@@ -1,7 +1,7 @@
-pytest-testrail
-===============
+pytest-testrail-e2e
+===================
 
-|Build Status| |PyPI version|
+|PyPI version| |License|
 
 This is a pytest plugin for creating/editing testplans or testruns based
 on pytest markers. The results of the collected tests will be updated
@@ -12,7 +12,7 @@ Installation
 
 ::
 
-   pip install pytest-testrail
+   pip install pytest-testrail-e2e
 
 Configuration
 -------------
@@ -37,8 +37,6 @@ Add a marker to the tests that will be picked up to be added to the run.
    @pytestrail.case('C1234', 'C5678')
    def test_bar():
        # test code goes here
-
-See a `more detailed example here <tests/livetest/livetest.py>`__.
 
 Config for TestRail
 ~~~~~~~~~~~~~~~~~~~
@@ -121,8 +119,36 @@ All available options
                            Do not publish results of "blocked" testcases in
                            TestRail
      --tr-skip-missing     Skip test cases that are not present in testrun
+     --tr-report-single-test
+                           Report result immediately for each test case when it finished
 
-.. |Build Status| image:: https://travis-ci.org/allankp/pytest-testrail.svg?branch=master
-   :target: https://travis-ci.org/allankp/pytest-testrail
-.. |PyPI version| image:: https://badge.fury.io/py/pytest-testrail.svg
-   :target: https://badge.fury.io/py/pytest-testrail
+.. |PyPI version| image:: https://badge.fury.io/py/pytest-testrail-e2e.svg
+   :target: https://badge.fury.io/py/pytest-testrail-e2e
+.. |License| image:: http://img.shields.io/badge/license-MIT-brightgreen.svg
+   :target: https://github.com/vietnq254/pytest-testrail-e2e/blob/master/LICENSE
+
+TestRail Settings
+=================
+
+To increase security, the TestRail team suggests using an API key instead of a password. You can see how to generate an API key `here <http://docs.gurock.com/testrail-api2/accessing#username_and_api_key>`__.
+
+If you maintain your own TestRail instance on your own server, it is recommended to `enable HTTPS for your TestRail installation <http://docs.gurock.com/testrail-admin/admin-securing#using_https>`__.
+
+For TestRail hosted accounts maintained by `Gurock <http://www.gurock.com/>`__, all accounts will automatically use HTTPS.
+
+You can read the whole TestRail documentation `here <http://docs.gurock.com/>`__.
+
+Author
+======
+
+NGUYEN Viet - `github <https://github.com/vietnq254>`__.
+
+License
+=======
+
+This project is licensed under the `MIT license <https://github.com/vietnq254/pytest-testrail-e2e/blob/master/LICENSE>`__.
+
+Acknowledgments
+===============
+
+* `allankp <https://github.com/allankp>`__, author of the `pytest-testrail <https://github.com/allankp/pytest-testrail>`__ repository that was cloned.
