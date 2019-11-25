@@ -26,7 +26,7 @@ requirements: .requirements.txt
 	pip freeze > $@
 
 clean:
-	rm -rf .cache .coverage .tox pytests_py*-test.xml pytest_testrail.egg-info pytest_testrail.txt pytests_coverage.xml
+	rm -rf .cache .coverage .tox pytests_py*-test.xml pytest_testrail.egg-info pytest_testrail.txt pytests_coverage.xml build/ dist/ pytest_testrail_e2e.egg-info/
 	find . -name '*.pyc' -delete
 
 coverage:
