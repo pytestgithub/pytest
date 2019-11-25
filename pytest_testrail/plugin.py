@@ -227,7 +227,8 @@ class PyTestRailPlugin(object):
 
         if item.get_closest_marker(TESTRAIL_PREFIX):
             testcaseids = item.get_closest_marker(TESTRAIL_PREFIX).kwargs.get('ids')
-            if testcaseids and (item.get_closest_marker('skip') or rep.when == 'call'):
+            if testcaseids and (item.get_closest_marker('skip') or rep.when == 'call'
+                                or (rep.when == 'setup' and outcome.get_result().outcome == 'failed')):
                 self.add_result(
                     clean_test_ids(testcaseids),
                     status=status,
