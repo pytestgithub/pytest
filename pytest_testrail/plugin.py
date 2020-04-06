@@ -18,7 +18,8 @@ TESTRAIL_TEST_STATUS = {
 PYTEST_TO_TESTRAIL_STATUS = {
     "passed": TESTRAIL_TEST_STATUS["passed"],
     "failed": TESTRAIL_TEST_STATUS["failed"],
-    "skipped": TESTRAIL_TEST_STATUS["blocked"],
+    "skipped": TESTRAIL_TEST_STATUS["skipped"],
+    "blocked": TESTRAIL_TEST_STATUS["blocked"],
 }
 
 DT_FORMAT = '%d-%m-%Y %H:%M:%S'
@@ -32,6 +33,7 @@ CLOSE_TESTPLAN_URL = 'close_plan/{}'
 GET_TESTRUN_URL = 'get_run/{}'
 GET_TESTPLAN_URL = 'get_plan/{}'
 GET_TESTS_URL = 'get_tests/{}'
+GET_STATUSES_URL = 'get_statuses'
 
 COMMENT_SIZE_LIMIT = 4000
 
@@ -221,8 +223,13 @@ class PyTestRailPlugin(object):
         status = get_test_outcome(outcome.get_result().outcome)
         comment = rep.longrepr
         if item.get_closest_marker('skip'):
-            status = get_test_outcome('skipped')
+            TESTRAIL_TEST_STATUS["skipped"] = next(iter([item["id"] for item in self.get_testrail_statuses() if item["label"] == "Skipped"]), None)
+            status = get_test_outcome('skipped') or get_test_outcome('blocked')
             marker = item.get_closest_marker('skip')
+            comment = marker.args[0] if len(marker.args) > 0 else marker.kwargs.get('reason')
+        if item.get_closest_marker('block'):
+            status = get_test_outcome('blocked')
+            marker = item.get_closest_marker('block')
             comment = marker.args[0] if len(marker.args) > 0 else marker.kwargs.get('reason')
 
         if item.get_closest_marker(TESTRAIL_PREFIX):
@@ -250,6 +257,9 @@ class PyTestRailPlugin(object):
                 self.close_test_run(self.testrun_id)
             elif self.close_on_complete and self.testplan_id:
                 self.close_test_plan(self.testplan_id)
+
+    def pytest_sessionstart(self, session):
+        pass
 
     def __publish_results(self):
         """ Publish results in TestRail """
@@ -497,4 +507,19 @@ class PyTestRailPlugin(object):
         if error:
             print('[{}] Failed to get tests: "{}"'.format(TESTRAIL_PREFIX, error))
             return None
+        return response
+
+    def get_testrail_statuses(self):
+        """
+        :return: the list of statuses
+        """
+        response = self.client.send_get(
+            GET_STATUSES_URL,
+            cert_check=self.cert_check
+        )
+        error = self.client.get_error(response)
+        if error:
+            print('[{}] Failed to retrieve statues: "{}"'.format(TESTRAIL_PREFIX, error))
+            return False
+
         return response
