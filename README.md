@@ -2,7 +2,9 @@ pytest-testrail-e2e
 ===============
 
 [![PyPI version](https://badge.fury.io/py/pytest-testrail-e2e.svg)](https://badge.fury.io/py/pytest-testrail-e2e)
+[![Downloads](https://pepy.tech/badge/pytest-testrail-e2e)](https://pepy.tech/project/pytest-testrail-e2e)
 [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](/LICENSE)
+[![pytest](https://img.shields.io/badge/pytest-%3E%3D3.6-blue.svg)](https://img.shields.io/badge/pytest-%3E%3D3.6-blue.svg)
 
 This is a pytest plugin for creating/editing testplans or testruns based on pytest markers.
 The results of the collected tests will be updated against the testplan/testrun in TestRail.
@@ -30,7 +32,7 @@ Add a marker to the tests that will be picked up to be added to the run.
 
     from pytest_testrail.plugin import pytestrail
 
-    @pytestrail.case('C1234', 'C5678')
+    @pytestrail.case("C1234", "C5678")
     def test_bar():
         # test code goes here
 ```
@@ -41,7 +43,32 @@ Or if you want to add defects to testcase result:
 
     from pytest_testrail.plugin import pytestrail
 
-    @pytestrail.defect('PF-524', 'BR-543')
+    @pytestrail.defect("PF-524", "BR-543")
+    def test_bar():
+        # test code goes here
+```
+
+Skip a testcase [**You need create 'Skipped' status in TestRail'**]:
+
+```python
+
+    from pytest_testrail.plugin import pytestrail
+
+    @pytestrail.case("C1234")
+    @pytest.mark.skip("Mark as skipped description") 
+    # or @pytest.mark.skip(reason="Mark as skipped description")
+    def test_bar():
+        # test code goes here
+```
+
+Block a testcase:
+
+```python
+
+    from pytest_testrail.plugin import pytestrail
+
+    @pytestrail.case("C1234")
+    @pytest.mark.skip(reason="Mark as skipped description", block=True)
     def test_bar():
         # test code goes here
 ```
