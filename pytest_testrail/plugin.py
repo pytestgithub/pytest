@@ -75,6 +75,17 @@ class pytestrail(object):
         return pytest.mark.testrail_defects(defect_ids=defect_ids)
 
 
+    @staticmethod
+    def block(reason=None):
+        """
+                Decorator to mark block test case with reason.
+
+                ie. @pytestrail.block('Test case is blocked')
+
+                :return pytest.mark:
+                """
+        return pytest.mark.skip(reason=reason, block=True)
+
 def testrail(*ids):
     """
     Decorator to mark tests with testcase ids.
@@ -233,6 +244,9 @@ class PyTestRailPlugin(object):
                 status = get_test_outcome('skipped')
 
             comment = marker.args[0] if len(marker.args) > 0 else marker.kwargs.get('reason')
+
+        # if item.get_closest_marker('skip'):
+        #     pass
 
         if item.get_closest_marker(TESTRAIL_PREFIX):
             testcaseids = item.get_closest_marker(TESTRAIL_PREFIX).kwargs.get('ids')

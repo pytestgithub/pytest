@@ -66,11 +66,20 @@ Block a testcase:
 
 .. code:: python
 
-
+        
+        import pytest
         from pytest_testrail.plugin import pytestrail
+        
+        @pytestrail.case("C1234")
+        @pytestrail.block("Mark as blocked description")
+        # @pytestrail.block(reason="Mark as blocked description")
+        def test_bar():
+            # test code goes here
+        
+        # OR
 
         @pytestrail.case("C1234")
-        @pytest.mark.skip(reason="Mark as skipped description", block=True)
+        @pytest.mark.skip(reason="Mark as blocked description", block=True)
         def test_bar():
             # test code goes here
 
