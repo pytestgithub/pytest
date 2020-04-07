@@ -82,6 +82,21 @@ Block a testcase:
         # test code goes here
 ```
 
+How to set known defect ID for specific assertion: 
+set ``pytest-defect=<defect_id>`` in assertion error message.
+```python
+    
+    from pytest_testrail.plugin import pytestrail
+    
+    @pytestrail.case("C1234")
+    @pytestrail.defectif()
+    def test_bar():
+        # Assertion 1: defect NCT-836
+        assert 1==0, "pytest-defect=NCT-836"
+        # Assertion 2: defect NCT-1024
+        assert False, "Error message contains regex: pytest-defect=NCT-1024 allows to insert defect 'NCT-1024'"
+```
+
 ### Config for TestRail
 
 * Settings file template config:

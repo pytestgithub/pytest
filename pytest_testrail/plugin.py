@@ -74,6 +74,17 @@ class pytestrail(object):
                 """
         return pytest.mark.testrail_defects(defect_ids=defect_ids)
 
+    @staticmethod
+    def defectif():
+        """
+                Decorator to mark defects if the AssertionError message contains defect ID.
+
+                ie. @pytestrail.defectif()
+
+                :return pytest.mark:
+                """
+        return pytest.mark.defectif()
+
 
     @staticmethod
     def block(reason=None):
@@ -226,14 +237,21 @@ class PyTestRailPlugin(object):
         """ Collect result and associated testcases (TestRail) of an execution """
         outcome = yield
         rep = outcome.get_result()
+        comment = rep.longrepr
+
         defects = None
+        defect_ids = None
         if item.get_closest_marker(TESTRAIL_DEFECTS_PREFIX):
-            defectids = item.get_closest_marker(TESTRAIL_DEFECTS_PREFIX).kwargs.get('defect_ids')
-            if defectids is not None:
-                defects = str(clean_test_defects(defectids)).replace('[', '').replace(']', '').replace("'", '')
+            defect_ids = item.get_closest_marker(TESTRAIL_DEFECTS_PREFIX).kwargs.get('defect_ids')
+        elif item.get_closest_marker("defectif"):
+            items = re.findall("pytest-defect=\w+-\d*", str(comment))
+            if len(items) > 0:
+                defect_ids = [items[0].split("=")[-1]]
+
+        if defect_ids is not None:
+            defects = str(clean_test_defects(defect_ids)).replace('[', '').replace(']', '').replace("'", '')
 
         status = get_test_outcome(outcome.get_result().outcome)
-        comment = rep.longrepr
         if item.get_closest_marker('skip'):
             marker = item.get_closest_marker('skip')
             if len(marker.kwargs) > 0 and marker.kwargs.get('block'):
@@ -244,9 +262,6 @@ class PyTestRailPlugin(object):
                 status = get_test_outcome('skipped')
 
             comment = marker.args[0] if len(marker.args) > 0 else marker.kwargs.get('reason')
-
-        # if item.get_closest_marker('skip'):
-        #     pass
 
         if item.get_closest_marker(TESTRAIL_PREFIX):
             testcaseids = item.get_closest_marker(TESTRAIL_PREFIX).kwargs.get('ids')
