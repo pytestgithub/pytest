@@ -257,9 +257,9 @@ class PyTestRailPlugin(object):
             if len(marker.kwargs) > 0 and marker.kwargs.get('block'):
                 status = get_test_outcome('blocked')
             else:
-                TESTRAIL_TEST_STATUS["skipped"] = next(
-                    iter([item["id"] for item in self.get_testrail_statuses() if item["label"] == "Skipped"]), None)
-                status = get_test_outcome('skipped')
+                status = next(
+                    iter([item["id"] for item in self.get_testrail_statuses() if item["label"] == "Skipped"]),
+                    get_test_outcome('blocked'))
 
             comment = marker.args[0] if len(marker.args) > 0 else marker.kwargs.get('reason')
 
