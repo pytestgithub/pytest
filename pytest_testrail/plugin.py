@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
+import re
+import warnings
 from datetime import datetime
 from operator import itemgetter
 
 import pytest
-import re
-import warnings
 
 # Reference: http://docs.gurock.com/testrail-api2/reference-statuses
 TESTRAIL_TEST_STATUS = {
@@ -85,7 +85,6 @@ class pytestrail(object):
                 """
         return pytest.mark.defectif()
 
-
     @staticmethod
     def block(reason=None):
         """
@@ -96,6 +95,7 @@ class pytestrail(object):
                 :return pytest.mark:
                 """
         return pytest.mark.skip(reason=reason, block=True)
+
 
 def testrail(*ids):
     """
@@ -173,6 +173,7 @@ class PyTestRailPlugin(object):
         self.client = client
         self.project_id = project_id
         self.results = []
+        self.all_results = []
         self.suite_id = suite_id
         self.include_all = include_all
         self.testrun_name = tr_name
@@ -276,8 +277,14 @@ class PyTestRailPlugin(object):
                 )
 
             if self.report_single_test and rep.when == 'teardown':
-                # Report result to TestRail immediately
-                self.__publish_results()
+                current_result = self.results[0]
+                item = next((sub for sub in self.all_results if sub['case_id'] == current_result['case_id']
+                             and sub['status_id'] == TESTRAIL_TEST_STATUS['failed']), None)
+                if not item or current_result['status_id'] == TESTRAIL_TEST_STATUS['failed']:
+                    # Report result to TestRail immediately
+                    self.__publish_results()
+
+                self.all_results.append(current_result)
 
     def pytest_sessionfinish(self, session, exitstatus):
         if self.results:
@@ -331,7 +338,10 @@ class PyTestRailPlugin(object):
                 'duration': duration,
                 'defects': defects
             }
-            self.results.append(data)
+            item = next((sub for sub in self.results if sub['case_id'] == data['case_id']
+                         and sub['status_id'] == TESTRAIL_TEST_STATUS['failed']), None)
+            if item is None or data['status_id'] == TESTRAIL_TEST_STATUS['failed']:
+                self.results.append(data)
 
     def add_results(self, testrun_id):
         """
