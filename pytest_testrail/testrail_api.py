@@ -51,7 +51,7 @@ class APIClient:
         if self.timeout is not None:
             self.timeout = isinstance(self.timeout, float) if False else float(self.timeout)
 
-    def send_get(self, uri, **kwargs):
+    def send_gets(self, uri, field, **kwargs):
         '''
         Send GET
 
@@ -59,6 +59,9 @@ class APIClient:
 
         :param uri: The API method to call including parameters (e.g. get_case/1)
         :type uri: str
+        :param field: TestRail object (e.g. "cases", "tests", "results", "runs", "plans", "sections", "milestones"
+                        "projects")
+        :type field: str
         :param headers: (optional) Dictionary of HTTP Headers to send with the request.
         :type headers: dict
         :param cert_check: (optional) Either a boolean, in which case it controls whether we verify the server's TLS
@@ -68,22 +71,32 @@ class APIClient:
             or a :ref:`(connect timeout, read timeout) <timeouts>` tuple.
         :type timeout: float or tuple
         '''
+        params = {"offset": 0, "limit": 250}
+        values = []
+        while True:
+            items = self.send_get(uri, params=params, **kwargs)
+            if items["size"] == 0:
+                return values
+            values.extend(items[field])
+            params["offset"] += params["limit"]
+
+    def send_get(self, uri, params=None, **kwargs):
         cert_check = kwargs.get('cert_check', self.cert_check)
         headers = kwargs.get('headers', self.headers)
         url = self._url + uri
         r = requests.get(
             url,
+            params=params,
             auth=(self.user, self.password),
             headers=headers,
             verify=cert_check,
             timeout=self.timeout
         )
-
         if r.status_code == 429:  # Too many requests
             pause = int(r.headers.get('Retry-After', 60))
             print("Too many requests: pause for {}s".format(pause))
             time.sleep(pause)
-            return self.send_get(uri,**kwargs)
+            return self.send_get(uri, params, **kwargs)
         else:
             return r.json()
 

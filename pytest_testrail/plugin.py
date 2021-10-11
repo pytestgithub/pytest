@@ -537,8 +537,9 @@ class PyTestRailPlugin(object):
         :return: the list of tests containing in a testrun.
 
         """
-        response = self.client.send_get(
+        response = self.client.send_gets(
             GET_TESTS_URL.format(run_id),
+            "tests",
             cert_check=self.cert_check
         )
         error = self.client.get_error(response)
